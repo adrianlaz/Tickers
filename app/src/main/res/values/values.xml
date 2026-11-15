@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Tickers</string>
+    <string name="widget_single_label">Ticker</string>
+    <string name="widget_single_description">Price and 24h change for one asset</string>
+    <string name="widget_watchlist_label">Watchlist</string>
+    <string name="widget_watchlist_description">All your assets with price and 24h change</string>
+
+    <color name="icon_background">#FF1E3A5F</color>
+
+    <style name="Theme.Tickers" parent="android:Theme.Material.Light.NoActionBar" />
+</resources>

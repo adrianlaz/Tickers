@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+# Docker Gradle wrapper: runs ./gradlew inside the build container.
+#   ./dw assembleDebug     ./dw testDebugUnitTest     ./dw --rebuild-image
+#   ./dw install           build, then install the debug APK with the host's adb
+#   ./dw keygen            create the signing key (once; BACK IT UP)
+#   ./dw verify-signing    print the signing certificate of the built APKs
+set -euo pipefail
+cd "$(dirname "$0")"
+
+IMAGE=tickers-build
+# Gradle cache lives under $HOME (bind mount), not in a Docker volume, so it does not
+# grow Docker's data-root partition.
+GRADLE_CACHE="${TICKERS_GRADLE_CACHE:-$HOME/.cache/tickers-gradle}"
+mkdir -p "$GRADLE_CACHE/tmp"  # tmp: java.io.tmpdir, see JAVA_TOOL_OPTIONS below
+
+# Signing key lives outside the repo. Every APK (debug and release) must be signed with it,
+# otherwise Android refuses to install updates over an existing install.
+SIGNING_DIR="${TICKERS_SIGNING_DIR:-$HOME/.config/tickers-signing}"
+mkdir -p "$SIGNING_DIR" && chmod 700 "$SIGNING_DIR"
+
+build_image() {
+  docker build -t "$IMAGE" --build-arg UID="$(id -u)" --build-arg GID="$(id -g)" docker
+}
+
+if [[ "${1:-}" == "--rebuild-image" ]]; then build_image; exit 0; fi
+docker image inspect "$IMAGE" >/dev/null 2>&1 || build_image
+
+run() {
+  docker run --rm ${TTY:-} \
+    -v "$PWD":/work -v "$GRADLE_CACHE":/home/builder/.gradle \
+    -v "$SIGNING_DIR":/home/builder/signing \
+    -e TICKERS_SIGNING_DIR=/home/builder/signing \
+    -e JAVA_TOOL_OPTIONS=-Djava.io.tmpdir=/home/builder/.gradle/tmp \
+    -w /work "$IMAGE" "$@"
+}
+[[ -t 1 ]] && TTY=-t
+
+case "${1:-}" in
+  keygen)
+    if [[ -f "$SIGNING_DIR/release.jks" ]]; then
+      echo "Key already exists: $SIGNING_DIR/release.jks (refusing to overwrite)"; exit 1
+    fi
+    PASS="$(head -c 32 /dev/urandom | base64 | tr -dc 'A-Za-z0-9' | head -c 32)"
+    # Generic DN: the certificate is public inside every APK.
+    TTY='' run keytool -genkeypair -v -keystore /home/builder/signing/release.jks \
+      -storetype PKCS12 -alias tickers -keyalg RSA -keysize 4096 -validity 36500 \
+      -storepass "$PASS" -keypass "$PASS" -dname "CN=Tickers" >/dev/null 2>&1
+    umask 077
+    printf 'storeFile=release.jks\nstorePassword=%s\nkeyAlias=tickers\nkeyPassword=%s\n' \
+      "$PASS" "$PASS" > "$SIGNING_DIR/keystore.properties"
+    echo "Created $SIGNING_DIR/release.jks + keystore.properties."
+    echo "BACK UP that folder. If it is lost, updates won't install; the app must be reinstalled."
+    exit 0 ;;
+  verify-signing)
+    shift
+    for apk in "${@:-app/build/outputs/apk/debug/app-debug.apk}"; do
+      echo "== $apk"
+      TTY='' run /opt/android-sdk/build-tools/37.0.0/apksigner verify --print-certs "$apk" \
+        | grep -E 'SHA-256|DN'
+    done
+    exit 0 ;;
+esac
+
+# Bootstrap the Gradle wrapper on first use.
+[[ -x gradlew ]] || run gradle wrapper --gradle-version 9.9.1 --distribution-type bin
+
+if [[ "${1:-}" == "install" ]]; then
+  run ./gradlew assembleDebug
+  exec adb install -r app/build/outputs/apk/debug/app-debug.apk
+fi
+
+run ./gradlew "$@"
