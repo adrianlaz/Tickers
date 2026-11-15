@@ -18,8 +18,10 @@ import java.util.concurrent.TimeUnit
 class RefreshWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
-        val updated = applicationContext.container.repository
-            .refreshAll(extraSymbols = Widgets.tileSymbols(applicationContext))
+        val container = applicationContext.container
+        // Also refresh tile symbols and traded assets, even if they're not in the watchlist.
+        val extra = Widgets.tileSymbols(applicationContext) + container.portfolio.symbols()
+        val updated = container.repository.refreshAll(extraSymbols = extra)
         Widgets.updateAll(applicationContext)
         return when {
             updated -> Result.success()

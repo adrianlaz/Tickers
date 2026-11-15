@@ -24,6 +24,9 @@ class YahooDataSource(private val api: YahooApi) : MarketDataSource {
     override suspend fun chart(symbol: String, range: ChartRange): List<PricePoint> =
         toSeries(firstResult(api.chart(symbol, range.yahooRange, range.yahooInterval)))
 
+    override suspend fun dailyHistory(symbol: String, range: String): List<PricePoint> =
+        toSeries(firstResult(api.chart(symbol, range, "1d")))
+
     override suspend fun search(query: String): List<SearchResult> =
         api.search(query).quotes.orEmpty()
             .filter { it.quoteType != null && it.quoteType !in IGNORED_TYPES }

@@ -5,6 +5,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -17,9 +19,6 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
@@ -42,7 +41,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -109,39 +107,18 @@ fun WatchlistScreen(onOpen: (String) -> Unit, onAdd: () -> Unit) {
     val items by vm.items.collectAsStateWithLifecycle()
     val refreshing by vm.refreshing.collectAsStateWithLifecycle()
     var editing by rememberSaveable { mutableStateOf(false) }
-    var menuOpen by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) { vm.refresh() }
-    LaunchedEffect(Unit) { updater.checkIfDue() }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Tickers") },
+                title = { Text("Markets") },
                 actions = {
                     IconButton(onClick = { editing = !editing }) {
                         Icon(
                             if (editing) Icons.Default.Check else Icons.Default.Edit,
                             contentDescription = if (editing) "Done" else "Edit list",
-                        )
-                    }
-                    IconButton(onClick = { menuOpen = true }) {
-                        Icon(Icons.Default.MoreVert, contentDescription = "More")
-                    }
-                    DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
-                        if (updater.enabled) {
-                            DropdownMenuItem(
-                                text = { Text("Check for updates") },
-                                onClick = {
-                                    menuOpen = false
-                                    vm.viewModelScope.launch { updater.check() }
-                                },
-                            )
-                        }
-                        DropdownMenuItem(
-                            text = { Text("Version ${updater.currentVersion}") },
-                            onClick = { menuOpen = false },
-                            enabled = false,
                         )
                     }
                 },
@@ -172,15 +149,7 @@ fun WatchlistScreen(onOpen: (String) -> Unit, onAdd: () -> Unit) {
                         )
                         HorizontalDivider()
                     }
-                    item(key = "byline") {
-                        Text(
-                            "Tickers ${updater.currentVersion} · by Aari",
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.fillMaxWidth().padding(top = 24.dp, bottom = 96.dp),
-                        )
-                    }
+                    item(key = "spacer") { Spacer(Modifier.height(96.dp)) }
                 }
             }
         }

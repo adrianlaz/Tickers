@@ -4,8 +4,10 @@ import android.app.Application
 import android.content.Context
 import androidx.room.Room
 import com.tickers.app.data.MarketRepository
+import com.tickers.app.data.db.Migrations
 import com.tickers.app.data.db.TickersDatabase
 import com.tickers.app.data.remote.YahooDataSource
+import com.tickers.app.portfolio.PortfolioRepository
 import com.tickers.app.update.Updater
 import com.tickers.app.work.RefreshWorker
 
@@ -19,8 +21,12 @@ class TickersApp : Application() {
 }
 
 class AppContainer(context: Context) {
-    private val db = Room.databaseBuilder(context, TickersDatabase::class.java, "tickers.db").build()
+    // Never fallbackToDestructiveMigration: it would silently wipe the watchlist and trades.
+    private val db = Room.databaseBuilder(context, TickersDatabase::class.java, "tickers.db")
+        .addMigrations(*Migrations.ALL)
+        .build()
     val repository = MarketRepository(db.assetDao(), YahooDataSource.create())
+    val portfolio = PortfolioRepository(db, repository)
     val updater = Updater(context)
 }
 

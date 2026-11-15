@@ -5,6 +5,8 @@ interface MarketDataSource {
     suspend fun quote(symbol: String): Quote
     suspend fun chart(symbol: String, range: ChartRange): List<PricePoint>
     suspend fun search(query: String): List<SearchResult>
+    /** Daily closes over a Yahoo range string ("1y", "2y", "5y", "10y"). */
+    suspend fun dailyHistory(symbol: String, range: String): List<PricePoint>
 }
 
 data class Quote(

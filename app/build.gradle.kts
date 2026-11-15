@@ -71,6 +71,11 @@ tasks.matching { it.name == "assembleRelease" || it.name == "packageRelease" }.c
     }
 }
 
+ksp {
+    // Exported Room schemas: the reference that hand-written migrations are tested against.
+    arg("room.schemaLocation", "$projectDir/schemas")
+}
+
 dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)

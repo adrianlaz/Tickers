@@ -10,6 +10,10 @@ import androidx.room.TypeConverter
 import androidx.room.TypeConverters
 import androidx.room.Upsert
 import com.tickers.app.data.AssetType
+import com.tickers.app.portfolio.SellAllocationEntity
+import com.tickers.app.portfolio.TradeDao
+import com.tickers.app.portfolio.TradeEntity
+import com.tickers.app.portfolio.TradeSide
 import kotlinx.coroutines.flow.Flow
 
 @Entity(tableName = "assets")
@@ -88,10 +92,22 @@ class Converters {
     @TypeConverter fun fromType(t: AssetType): String = t.name
     @TypeConverter fun toType(s: String): AssetType =
         runCatching { AssetType.valueOf(s) }.getOrDefault(AssetType.OTHER)
+
+    @TypeConverter fun fromSide(s: TradeSide): String = s.name
+    @TypeConverter fun toSide(s: String): TradeSide = TradeSide.valueOf(s)
 }
 
-@Database(entities = [AssetEntity::class, QuoteEntity::class], version = 1, exportSchema = false)
+/**
+ * v1: watchlist (assets, quotes). v2: portfolio (trades, sell_allocations).
+ * Schemas are exported to app/schemas; migrations must match them exactly (see MigrationTest).
+ */
+@Database(
+    entities = [AssetEntity::class, QuoteEntity::class, TradeEntity::class, SellAllocationEntity::class],
+    version = 2,
+    exportSchema = true,
+)
 @TypeConverters(Converters::class)
 abstract class TickersDatabase : RoomDatabase() {
     abstract fun assetDao(): AssetDao
+    abstract fun tradeDao(): TradeDao
 }

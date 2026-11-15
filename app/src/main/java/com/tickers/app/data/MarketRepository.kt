@@ -68,6 +68,8 @@ class MarketRepository(
 
     suspend fun search(query: String): List<SearchResult> = source.search(query)
 
+    suspend fun dailyHistory(symbol: String, range: String): List<PricePoint> = source.dailyHistory(symbol, range)
+
     companion object {
         val DEFAULTS = listOf(
             Triple("BTC-USD", "Bitcoin", AssetType.CRYPTO),
