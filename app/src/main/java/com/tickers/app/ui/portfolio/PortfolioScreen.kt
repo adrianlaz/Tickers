@@ -177,10 +177,10 @@ private fun AssetSection(repo: PortfolioRepository, d: PortfolioData, a: AssetSu
                 Triple("ROI", Format.signedPct(a.roiPct), changeColor(a.roiPct)),
                 Triple("Fees paid", Format.usd(a.feesPaid), Color.Unspecified),
                 Triple("Trades", "${a.trades.size} (${a.sales.size} sells)", Color.Unspecified),
-                Triple("Win rate", a.winRatePct?.let { "%.0f%%".format(it) } ?: "—", Color.Unspecified),
+                Triple("Win rate", a.winRatePct?.let { "%.0f%%".format(Locale.US, it) } ?: "—", Color.Unspecified),
                 Triple("Best sale", Format.signedUsd(a.bestSale?.pnl), changeColor(a.bestSale?.pnl)),
                 Triple("Worst sale", Format.signedUsd(a.worstSale?.pnl), changeColor(a.worstSale?.pnl)),
-                Triple("Avg holding", a.avgHoldingDays?.let { "%.1f days".format(it) } ?: "—", Color.Unspecified),
+                Triple("Avg holding", a.avgHoldingDays?.let { "%.1f days".format(Locale.US, it) } ?: "—", Color.Unspecified),
             )
         )
 

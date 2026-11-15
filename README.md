@@ -20,6 +20,14 @@ The APK is at `app/build/outputs/apk/debug/app-debug.apk`.
 Phone setup: Settings → About phone → tap Build number 7× → Developer options → USB debugging on,
 plug in, accept the prompt, check `adb devices`.
 
+## Portfolio
+
+Record Revolut X buys and sells (Trades tab, + button) to track profit. Each buy is a position;
+a sell uses the oldest positions first (FIFO) unless you pick positions yourself. The Portfolio tab
+shows value, realized/unrealized profit, ROI, average and break-even price, fees, win rate, a value
+vs. cost chart, every open position, and a sale simulator. USDC is valued at $1.
+Trades live only on the phone: use Settings → Export to keep a backup file.
+
 ## Widgets
 
 - **Ticker**: one asset per widget; you pick it when placing (long-press later to reconfigure).
@@ -48,7 +56,7 @@ and reinstalled, and the in-app updater stops working for existing installs.
 ## Releases and in-app updates
 
 The app checks `https://github.com/adrianlaz/Tickers` releases (set by `tickers.githubRepo` in
-`gradle.properties`): automatically at most every 6 hours on app open, or via ⋮ → Check for updates.
+`gradle.properties`): automatically at most every 6 hours on app open, or via Settings → Check for updates.
 When a newer version exists it shows an Install button, downloads the APK and opens Android's
 install prompt. The first time, Android asks you to allow Tickers to install apps.
 

@@ -120,7 +120,11 @@ private fun ListContent(context: Context, items: List<WatchItem>, height: Dp) {
     }
 }
 
-private fun rowsThatFit(space: Dp): Int = (space.value / ROW_MIN.value).toInt().coerceAtLeast(0)
+/** Glance renders at most 10 children per Row/Column; header + 9 rows stays within that. */
+private const val MAX_CHILDREN = 10
+
+private fun rowsThatFit(space: Dp): Int =
+    (space.value / ROW_MIN.value).toInt().coerceIn(0, MAX_CHILDREN - 1)
 
 @Composable
 private fun Header(items: List<WatchItem>) {
@@ -191,7 +195,7 @@ private fun CompactContent(context: Context, items: List<WatchItem>, width: Dp, 
     val inner = height - WidgetPadding.compactVertical * 2 - SAFETY
     val threeLines = lineHeight(CELL_TICKER_SP) + lineHeight(CELL_PRICE_SP) + lineHeight(CELL_CHANGE_SP)
     val usable = width - WidgetPadding.horizontal * 2
-    val fit = (usable.value / MIN_CELL_WIDTH.value).toInt().coerceAtLeast(1)
+    val fit = (usable.value / MIN_CELL_WIDTH.value).toInt().coerceIn(1, MAX_CHILDREN)
     Row(
         modifier = widgetSurface().padding(horizontal = WidgetPadding.horizontal, vertical = WidgetPadding.compactVertical),
         verticalAlignment = Alignment.CenterVertically,

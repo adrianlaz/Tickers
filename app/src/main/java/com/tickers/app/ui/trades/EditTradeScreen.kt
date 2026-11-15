@@ -306,7 +306,7 @@ fun EditTradeScreen(tradeId: Long, onDone: () -> Unit) {
                 label = { Text("Fee (USD), as shown by Revolut X") },
                 supportingText = {
                     orderValue?.takeIf { it > 0 }?.let {
-                        Text("Order ${Format.usd(it)} · fee = ${"%.3f".format(fee / it * 100)}%")
+                        Text("Order ${Format.usd(it)} · fee = ${"%.3f".format(Locale.US, fee / it * 100)}%")
                     }
                 },
                 singleLine = true, keyboardOptions = decimal, modifier = Modifier.fillMaxWidth(),
