@@ -26,6 +26,15 @@ object Format {
         }
     }
 
+    /** Narrower price for tight widget cells: no cents at or above 1,000. */
+    fun priceCompact(value: Double?, currency: String? = "USD"): String =
+        if (value != null && abs(value) >= 1000) {
+            val number = DecimalFormat("#,##0", symbols).format(value)
+            if (currency == null || currency == "USD") "$$number" else price(value, currency)
+        } else {
+            price(value, currency)
+        }
+
     fun change(pct: Double?): String {
         if (pct == null) return "—"
         val arrow = if (pct >= 0) "▲" else "▼"
